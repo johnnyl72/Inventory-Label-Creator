@@ -124,7 +124,7 @@ class LabelGenerator:
     
     def draw_label(self, canvas, x, y, data):
         """Draw a single label with the specified data"""
-        aisle, ambient, bg_color = data
+        aisle, ambient, bg_color, qr_value = data
         
         # Get positions
         label_width = self.config['label_width']
@@ -190,7 +190,8 @@ class LabelGenerator:
         )
         
         # Generate and place QR code
-        qr_data = f"{aisle}_{ambient}"
+        qr_data = f"{qr_value}"
+        print(qr_data)
         qr_img = self.create_qr_code(qr_data)
         
         # Calculate QR code size and position
@@ -289,9 +290,10 @@ class LabelGenerator:
             aisle = row['aisle']
             ambient = row['ambient']
             color = row['color']
-            
+            qr_value = row['qr_value']
+
             # Draw the label
-            self.draw_label(c, x, y, [aisle, ambient, color])
+            self.draw_label(c, x, y, [aisle, ambient, color, qr_value])
         
         # Save the PDF
         c.save()
