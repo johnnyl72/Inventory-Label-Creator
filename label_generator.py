@@ -163,12 +163,23 @@ class LabelGenerator:
             str(aisle)
         )
         
-        # Section 2: Ambient
+        # Section 2: Determine header based on qr_value
+        # Default header
+        header_text = "AMBIENT"
+        
+        # Check qr_value to determine appropriate header
+        if "STOWAGE" in qr_value:
+            header_text = "AMBIENT"
+        elif "CHILLER" in qr_value:
+            header_text = "CHILLED"
+        elif "FROZEN" in qr_value:
+            header_text = "FREEZER"
+        
         canvas.setFont(self.config['header_font'], self.config['header_size'])
         canvas.drawCentredString(
             section_start_x[1] + self.section_widths[1]/2, 
             y + label_height - self.config['header_size'] - 4,
-            "AMBIENT"
+            header_text
         )
         
         canvas.setFont(self.config['content_font'], self.config['content_size'])
