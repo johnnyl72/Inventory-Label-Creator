@@ -9,6 +9,8 @@ from reportlab.graphics import renderPDF
 from PIL import Image
 import io
 import os
+import time
+import uuid
 
 class LabelGenerator:
     def __init__(self, config=None):
@@ -172,8 +174,8 @@ class LabelGenerator:
             header_text = "AMBIENT"
         elif "CHILLER" in qr_value:
             header_text = "CHILLED"
-        elif "FROZEN" in qr_value:
-            header_text = "FREEZER"
+        elif "FREEZER" in qr_value:
+            header_text = "FROZEN"
         
         canvas.setFont(self.config['header_font'], self.config['header_size'])
         canvas.drawCentredString(
@@ -202,7 +204,6 @@ class LabelGenerator:
         
         # Generate and place QR code
         qr_data = f"{qr_value}"
-        print(qr_data)
         qr_img = self.create_qr_code(qr_data)
         
         # Calculate QR code size and position
@@ -212,18 +213,29 @@ class LabelGenerator:
         # Position QR code centered but with space for arrow above
         qr_y = y + (label_height - qr_size)/2 - 5  # Shift down slightly to make room for arrow
         
-        # Save QR code to a temporary file
-        temp_qr_file = f"temp_qr_{aisle}_{ambient}.png"
-        qr_img.save(temp_qr_file)
+        # Use a more unique temporary filename with timestamp
+        temp_qr_file = f"temp_qr_{uuid.uuid4()}.png"
         
-        # Place QR code on canvas using the file
-        canvas.drawImage(
-            temp_qr_file, qr_x, qr_y, width=qr_size, height=qr_size, mask='auto'
-        )
-        
-        # Clean up the temporary file
-        if os.path.exists(temp_qr_file):
-            os.remove(temp_qr_file)
+        try:
+            # Save QR code to a temporary file
+            qr_img.save(temp_qr_file)
+            
+            # Small delay to ensure file is fully written
+            time.sleep(0.1)
+            
+            # Place QR code on canvas using the file
+            canvas.drawImage(
+                temp_qr_file, qr_x, qr_y, width=qr_size, height=qr_size, mask='auto'
+            )
+        except Exception as e:
+            print(f"Error processing QR code: {e}")
+        finally:
+            # Clean up the temporary file - make sure it happens even if there's an error
+            try:
+                if os.path.exists(temp_qr_file):
+                    os.remove(temp_qr_file)
+            except:
+                print(f"Warning: Could not remove temporary file {temp_qr_file}")
             
     # def draw_rounded_rect(self, canvas, x, y, width, height, radius, fill_color, line_width=1):
     #     """Draw a rounded rectangle on the canvas"""
